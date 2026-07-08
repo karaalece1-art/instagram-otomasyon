@@ -48,14 +48,15 @@ def create_media_container(
         "access_token": _access_token(),
     }
 
-    if alt_text:
-        data["alt_text"] = alt_text
-
     if media_type == "video":
         data["media_type"] = "REELS"  # Feed videoları da Reels olarak yayınlanır
         data["video_url"] = media_url
+        data["share_to_feed"] = "true"  # Reels'in ana profil akışında da görünmesi için
+        # NOT: alt_text, Reels/video container'larında desteklenmiyor, bu yüzden eklenmiyor.
     else:
         data["image_url"] = media_url
+        if alt_text:
+            data["alt_text"] = alt_text
 
     resp = requests.post(f"{BASE_URL}/{_ig_user_id()}/media", data=data, timeout=30)
     resp.raise_for_status()
