@@ -34,16 +34,22 @@ def _access_token():
     return os.environ["IG_ACCESS_TOKEN"]
 
 
-def create_media_container(media_url: str, caption: str, media_type: str = "image") -> str:
+def create_media_container(
+    media_url: str, caption: str, media_type: str = "image", alt_text: str = ""
+) -> str:
     """
     Adım 1: Görsel veya video ve caption ile bir 'media container' oluşturur.
 
     media_type: "image" veya "video"
+    alt_text: (opsiyonel) erişilebilirlik için ekran okuyucu açıklaması
     """
     data = {
         "caption": caption,
         "access_token": _access_token(),
     }
+
+    if alt_text:
+        data["alt_text"] = alt_text
 
     if media_type == "video":
         data["media_type"] = "REELS"  # Feed videoları da Reels olarak yayınlanır
@@ -93,9 +99,11 @@ def publish_media(container_id: str) -> dict:
     return resp.json()
 
 
-def post_to_instagram(media_url: str, caption: str, media_type: str = "image") -> dict:
+def post_to_instagram(
+    media_url: str, caption: str, media_type: str = "image", alt_text: str = ""
+) -> dict:
     """Tam akış: container oluştur -> hazır olmasını bekle -> yayınla."""
-    container_id = create_media_container(media_url, caption, media_type=media_type)
+    container_id = create_media_container(media_url, caption, media_type=media_type, alt_text=alt_text)
     wait_until_ready(container_id)
     return publish_media(container_id)
 
