@@ -20,7 +20,10 @@ import time
 import requests
 
 GRAPH_API_VERSION = "v21.0"
-BASE_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
+# NOT: "Instagram Login" akışıyla alınan token'lar graph.instagram.com üzerinden
+# çalışır (graph.facebook.com değil). Facebook Sayfası gerekmez, IG_BUSINESS_ACCOUNT_ID
+# doğrudan Instagram User ID'dir.
+BASE_URL = f"https://graph.instagram.com/{GRAPH_API_VERSION}"
 
 
 def _ig_user_id():
