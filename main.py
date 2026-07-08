@@ -43,8 +43,9 @@ def run():
     print(f"Public URL: {public_url}")
 
     caption = item["caption"] or ""
+    alt_text = item.get("alt_text", "") or ""
 
-    result = post_to_instagram(public_url, caption, media_type=item["type"])
+    result = post_to_instagram(public_url, caption, media_type=item["type"], alt_text=alt_text)
     print("Paylaşım tamamlandı:", result)
 
     mark_as_posted(item)
