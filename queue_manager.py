@@ -25,7 +25,7 @@ def get_next_item():
     Sıradaki medya dosyasını döndürür.
 
     Returns:
-        dict {"path": str, "type": "image"|"video", "caption": str} veya None
+        dict {"path": str, "type": "image"|"video", "caption": str, "alt_text": str} veya None
     """
     if not os.path.isdir(QUEUE_DIR):
         return None
@@ -42,31 +42,42 @@ def get_next_item():
     filename = media_files[0]
     ext = os.path.splitext(filename)[1].lower()
     media_type = "image" if ext in IMAGE_EXTENSIONS else "video"
+    basename = os.path.splitext(filename)[0]
 
-    caption_path = os.path.join(QUEUE_DIR, os.path.splitext(filename)[0] + ".txt")
+    caption_path = os.path.join(QUEUE_DIR, basename + ".txt")
     caption = ""
     if os.path.exists(caption_path):
         with open(caption_path, "r", encoding="utf-8") as f:
             caption = f.read().strip()
+
+    # Opsiyonel: erişilebilirlik için alt metin (ekran okuyucularda okunur)
+    alt_text_path = os.path.join(QUEUE_DIR, basename + ".alt.txt")
+    alt_text = ""
+    if os.path.exists(alt_text_path):
+        with open(alt_text_path, "r", encoding="utf-8") as f:
+            alt_text = f.read().strip()
 
     return {
         "path": os.path.join(QUEUE_DIR, filename),
         "filename": filename,
         "type": media_type,
         "caption": caption,
+        "alt_text": alt_text,
     }
 
 
 def mark_as_posted(item: dict):
-    """Paylaşılan dosyayı (ve varsa caption dosyasını) posted/ klasörüne taşır."""
+    """Paylaşılan dosyayı (ve varsa caption/alt metin dosyalarını) posted/ klasörüne taşır."""
     os.makedirs(POSTED_DIR, exist_ok=True)
 
     shutil.move(item["path"], os.path.join(POSTED_DIR, item["filename"]))
 
-    caption_filename = os.path.splitext(item["filename"])[0] + ".txt"
-    caption_path = os.path.join(QUEUE_DIR, caption_filename)
-    if os.path.exists(caption_path):
-        shutil.move(caption_path, os.path.join(POSTED_DIR, caption_filename))
+    basename = os.path.splitext(item["filename"])[0]
+
+    for suffix in (".txt", ".alt.txt"):
+        side_path = os.path.join(QUEUE_DIR, basename + suffix)
+        if os.path.exists(side_path):
+            shutil.move(side_path, os.path.join(POSTED_DIR, basename + suffix))
 
 
 if __name__ == "__main__":
