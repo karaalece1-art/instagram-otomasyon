@@ -1,0 +1,40 @@
+name: Daily Instagram Post
+
+on:
+  schedule:
+    # Her gün UTC 09:00 -> Türkiye saatiyle yaz saatinde 12:00 civarı
+    # Kendi zamanınıza göre cron ifadesini düzenleyin: https://crontab.guru
+    - cron: "0 9 * * *"
+  workflow_dispatch: {}  # Manuel tetikleme için
+
+permissions:
+  contents: write  # posted/ klasörüne taşıma sonrası commit atabilmek için
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo'yu çek
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Bağımlılıkları yükle
+        run: pip install -r requirements.txt
+
+      - name: Otomasyonu çalıştır
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_BUSINESS_ACCOUNT_ID: ${{ secrets.IG_BUSINESS_ACCOUNT_ID }}
+        run: python main.py
+
+      - name: Değişiklikleri commit'le (paylaşılan dosyayı posted/ klasörüne taşı)
+        run: |
+          git config user.name "instagram-automation-bot"
+          git config user.email "actions@github.com"
+          git add content/
+          git diff --cached --quiet || git commit -m "chore: mark item as posted"
+          git push
